@@ -105,4 +105,26 @@ public class CheckoutServiceTests
         receipt.Total.Should().Be(0m);
         receipt.OrderId.Should().Be(order.Id);
     }
+
+
+
+    [Theory]
+    [InlineData(999.99, 0)]
+    [InlineData(1000, 100)]
+    [InlineData(1500, 100)]
+    public async Task CheckoutAsync_WhenSubtotalVaries_ShouldApplyCorrectDiscount(double subtotal, double expectedDiscount)
+    {
+        // Arrange
+        var sut = CreateSut();
+        var order = CreateOrder(CreateItem("Laptop Stand", (decimal)subtotal, 1));
+
+        // Act
+        var receipt = await sut.CheckoutAsync(order);
+
+        // Assert
+        receipt.Subtotal.Should().Be((decimal)subtotal);
+        receipt.Discount.Should().Be((decimal)expectedDiscount);
+    }
+
+
 }
