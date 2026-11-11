@@ -127,4 +127,38 @@ public class CheckoutServiceTests
     }
 
 
+
+    [Fact]
+    public async Task CheckoutAsync_WhenOrderMatchesExampleA_ShouldCalculateCorrectSubtotalDiscountAndTotal()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var order = CreateOrder(
+            CreateItem("Item 1", 150m, 2),
+            CreateItem("Item 2", 400m, 1));
+
+        // Act
+        var receipt = await sut.CheckoutAsync(order);
+
+        // Assert
+        receipt.Subtotal.Should().Be(700m);
+        receipt.Discount.Should().Be(0m);
+        receipt.Total.Should().Be(700m);
+    }
+
+    [Fact]
+    public async Task CheckoutAsync_WhenOrderMatchesExampleC_ShouldCapDiscountAtOneHundred()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var order = CreateOrder(CreateItem("Item 1", 500m, 3));
+
+        // Act
+        var receipt = await sut.CheckoutAsync(order);
+
+        // Assert
+        receipt.Subtotal.Should().Be(1500m);
+        receipt.Discount.Should().Be(100m);
+        receipt.Total.Should().Be(1400m);
+    }
 }
