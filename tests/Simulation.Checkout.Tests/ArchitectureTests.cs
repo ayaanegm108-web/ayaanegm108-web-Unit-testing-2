@@ -2,7 +2,7 @@
 using FluentAssertions;
 using NetArchTest.Rules;
 using Simulation.Checkout.Domain;
-
+using Simulation.Checkout.Application;
 namespace Simulation.Checkout.Tests;
 
 public class ArchitectureTests
@@ -19,6 +19,23 @@ public class ArchitectureTests
             .NotHaveDependencyOnAny(
                 "Simulation.Checkout.Application",
                 "Simulation.Checkout.Infrastructure")
+            .GetResult();
+
+        // Assert
+        result.IsSuccessful.Should().BeTrue();
+    }
+
+
+    [Fact]
+    public void Application_ShouldNotDependOnInfrastructure()
+    {
+        // Arrange
+        var applicationAssembly = typeof(CheckoutService).Assembly;
+
+        // Act
+        var result = Types.InAssembly(applicationAssembly)
+            .Should()
+            .NotHaveDependencyOn("Simulation.Checkout.Infrastructure")
             .GetResult();
 
         // Assert
