@@ -4,6 +4,7 @@ using NetArchTest.Rules;
 using Simulation.Checkout.Domain;
 using Simulation.Checkout.Application;
 namespace Simulation.Checkout.Tests;
+using Simulation.Checkout.Infrastructure;
 
 public class ArchitectureTests
 {
@@ -36,6 +37,31 @@ public class ArchitectureTests
         var result = Types.InAssembly(applicationAssembly)
             .Should()
             .NotHaveDependencyOn("Simulation.Checkout.Infrastructure")
+            .GetResult();
+
+        // Assert
+        result.IsSuccessful.Should().BeTrue();
+    }
+
+
+
+    [Fact]
+    public void Interfaces_ShouldStartWithI()
+    {
+        // Arrange
+        var assemblies = new[]
+        {
+            typeof(Order).Assembly,
+            typeof(CheckoutService).Assembly,
+            typeof(InMemoryOrderRepository).Assembly
+        };
+
+        // Act
+        var result = Types.InAssemblies(assemblies)
+            .That()
+            .AreInterfaces()
+            .Should()
+            .HaveNameStartingWith("I")
             .GetResult();
 
         // Assert
