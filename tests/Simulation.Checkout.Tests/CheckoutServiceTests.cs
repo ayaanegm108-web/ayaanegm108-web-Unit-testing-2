@@ -55,4 +55,23 @@ public class CheckoutServiceTests
         //assert
         await act.Should().ThrowAsync<EmptyOrderException>();
     }
+
+
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task CheckoutAsync_WhenQuantityIsNotPositive_ShouldThrowInvalidQuantityExceptionWithProductName(int quantity)
+    {
+        //arrange
+        var sut = CreateSut();
+        var order = CreateOrder(CreateItem("Keyboard", 100m, quantity));
+
+        //act
+        var act = () => sut.CheckoutAsync(order);
+
+        //assert
+        var exception = await act.Should().ThrowAsync<InvalidQuantityException>();
+        exception.Which.Message.Should().Contain("Keyboard");
+    }
 }
