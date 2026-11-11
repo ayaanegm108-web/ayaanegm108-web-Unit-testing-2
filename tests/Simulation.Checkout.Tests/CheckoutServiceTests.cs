@@ -182,4 +182,48 @@ public class CheckoutServiceTests
             x => x.SendOrderConfirmationAsync(receipt, It.IsAny<CancellationToken>()),
             Times.Once);
     }
+
+
+    [Fact]
+    public async Task CheckoutAsync_WhenItemIsOutOfStock_ShouldThrowAndNeverSaveOrSend()
+    {
+        // Arrange
+        var sut = CreateSut(inventoryAvailable: false);
+        var order = CreateOrder(CreateItem("Webcam", 200m, 1));
+
+        // Act
+        var act = () => sut.CheckoutAsync(order);
+
+        // Assert
+        await act.Should().ThrowAsync<InsufficientInventoryException>();
+        _repositoryMock.Verify(
+            x => x.SaveAsync(It.IsAny<Order>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        _notificationMock.Verify(
+            x => x.SendOrderConfirmationAsync(It.IsAny<CheckoutReceipt>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task CheckoutAsync_WhenValidationFails_ShouldNeverCheckInventoryOrSaveOrSend()
+    {
+        // Arrange
+        var sut = CreateSut();
+        var order = CreateOrder(CreateItem("Headset", 150m, 0));
+
+        // Act
+        var act = () => sut.CheckoutAsync(order);
+
+        // Assert
+        await act.Should().ThrowAsync<InvalidQuantityException>();
+        _inventoryMock.Verify(
+            x => x.IsAvailableAsync(It.IsAny<Guid>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        _repositoryMock.Verify(
+            x => x.SaveAsync(It.IsAny<Order>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+        _notificationMock.Verify(
+            x => x.SendOrderConfirmationAsync(It.IsAny<CheckoutReceipt>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
 }
