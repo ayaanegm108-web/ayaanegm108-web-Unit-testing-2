@@ -161,4 +161,25 @@ public class CheckoutServiceTests
         receipt.Discount.Should().Be(100m);
         receipt.Total.Should().Be(1400m);
     }
+
+
+    [Fact]
+    public async Task CheckoutAsync_WhenAllItemsInStock_ShouldSaveOrderOnceAndSendConfirmationOnce()
+    {
+        // Arrange
+        var sut = CreateSut(inventoryAvailable: true);
+        var order = CreateOrder(CreateItem("Monitor", 300m, 2));
+
+        // Act
+        var receipt = await sut.CheckoutAsync(order);
+
+        // Assert
+        receipt.Should().NotBeNull();
+        _repositoryMock.Verify(
+            x => x.SaveAsync(order, It.IsAny<CancellationToken>()),
+            Times.Once);
+        _notificationMock.Verify(
+            x => x.SendOrderConfirmationAsync(receipt, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
 }
