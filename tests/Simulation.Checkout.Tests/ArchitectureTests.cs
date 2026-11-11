@@ -5,7 +5,7 @@ using Simulation.Checkout.Domain;
 using Simulation.Checkout.Application;
 namespace Simulation.Checkout.Tests;
 using Simulation.Checkout.Infrastructure;
-
+using Simulation.Checkout.Application.Abstractions;
 public class ArchitectureTests
 {
     [Fact]
@@ -62,6 +62,33 @@ public class ArchitectureTests
             .AreInterfaces()
             .Should()
             .HaveNameStartingWith("I")
+            .GetResult();
+
+        // Assert
+        result.IsSuccessful.Should().BeTrue();
+    }
+
+
+
+    [Fact]
+    public void Classes_ImplementingIOrderRepository_ShouldEndWithRepository()
+    {
+        // Arrange
+        var assemblies = new[]
+        {
+            typeof(Order).Assembly,
+            typeof(CheckoutService).Assembly,
+            typeof(InMemoryOrderRepository).Assembly
+        };
+
+        // Act
+        var result = Types.InAssemblies(assemblies)
+            .That()
+            .ImplementInterface(typeof(IOrderRepository))
+            .And()
+            .AreClasses()
+            .Should()
+            .HaveNameEndingWith("Repository")
             .GetResult();
 
         // Assert
