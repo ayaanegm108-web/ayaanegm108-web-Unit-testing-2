@@ -74,4 +74,35 @@ public class CheckoutServiceTests
         var exception = await act.Should().ThrowAsync<InvalidQuantityException>();
         exception.Which.Message.Should().Contain("Keyboard");
     }
+
+
+
+    [Fact]
+    public async Task CheckoutAsync_WhenPriceIsNegative_ShouldThrowInvalidPriceException()
+    {
+        //arrange
+        var sut = CreateSut();
+        var order = CreateOrder(CreateItem("Mouse", -0.01m, 1));
+
+        //act
+        var act = () => sut.CheckoutAsync(order);
+
+        //assert
+        await act.Should().ThrowAsync<InvalidPriceException>();
+    }
+
+    [Fact]
+    public async Task CheckoutAsync_WhenPriceIsZero_ShouldSucceed()
+    {
+        //arrange
+        var sut = CreateSut();
+        var order = CreateOrder(CreateItem("Free Sample", 0m, 1));
+
+        //act
+        var receipt = await sut.CheckoutAsync(order);
+
+        //assert
+        receipt.Total.Should().Be(0m);
+        receipt.OrderId.Should().Be(order.Id);
+    }
 }
